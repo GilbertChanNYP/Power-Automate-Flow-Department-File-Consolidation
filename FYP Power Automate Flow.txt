@@ -1,0 +1,60 @@
+Display.SelectFolder Description: $'''Select the folder with all the department files''' IsTopMost: False SelectedFolder=> SelectedFolder ButtonPressed=> ButtonPressed
+Folder.GetFiles Folder: SelectedFolder FileFilter: $'''*''' IncludeSubfolders: False FailOnAccessDenied: True SortBy1: Folder.SortBy.NoSort SortDescending1: False SortBy2: Folder.SortBy.NoSort SortDescending2: False SortBy3: Folder.SortBy.NoSort SortDescending3: False Files=> Files
+Display.SelectFileDialog.SelectFile Title: $'''Select the Master File''' IsTopMost: False CheckIfFileExists: False SelectedFile=> SelectedFile ButtonPressed=> ButtonPressed2
+Excel.LaunchExcel.LaunchAndOpenUnderExistingProcess Path: SelectedFile Visible: True ReadOnly: False Instance=> MasterFile
+Variables.CreateNewList List=> TableList
+Variables.CreateNewList List=> templist
+Variables.CreateNewList List=> tablenames
+Variables.AddItemToList Item: $'''VARIABLE EXPENSE''' List: templist
+Variables.AddItemToList Item: 69 List: templist
+Variables.AddItemToList Item: 75 List: templist
+Variables.AddItemToList Item: templist List: TableList
+Variables.ClearList List: templist
+Variables.AddItemToList Item: $'''INCOME''' List: templist
+Variables.AddItemToList Item: 8 List: templist
+Variables.AddItemToList Item: 11 List: templist
+Variables.AddItemToList Item: templist List: TableList
+Variables.ClearList List: templist
+Variables.AddItemToList Item: $'''SALARIES & SOCIAL CHARGES''' List: templist
+Variables.AddItemToList Item: 15 List: templist
+Variables.AddItemToList Item: 65 List: templist
+Variables.AddItemToList Item: templist List: TableList
+Variables.ClearList List: templist
+Variables.AddItemToList Item: $'''EXTERNAL CONTRACT''' List: templist
+Variables.AddItemToList Item: 79 List: templist
+Variables.AddItemToList Item: 83 List: templist
+Variables.AddItemToList Item: templist List: TableList
+Variables.ClearList List: templist
+Variables.AddItemToList Item: $'''INFRASTRUCTURE''' List: templist
+Variables.AddItemToList Item: 87 List: templist
+Variables.AddItemToList Item: 106 List: templist
+Variables.AddItemToList Item: templist List: TableList
+Variables.ClearList List: templist
+Variables.AddItemToList Item: $'''TRAVEL, TRAINING & MEETING''' List: templist
+Variables.AddItemToList Item: 110 List: templist
+Variables.AddItemToList Item: 117 List: templist
+Variables.AddItemToList Item: templist List: TableList
+LOOP FOREACH CurrentItem2 IN TableList
+    Variables.AddItemToList Item: CurrentItem2[0] List: tablenames
+END
+Display.SelectFromListDialog.SelectFromList Title: $'''Select table ''' List: tablenames IsTopMost: False AllowEmpty: False SelectedItem=> SelectedItem SelectedIndex=> SelectedIndex ButtonPressed=> ButtonPressed4
+SET SelectedInnerList TO TableList[SelectedIndex]
+SET Value1 TO SelectedInnerList[1]
+SET Value2 TO SelectedInnerList[2]
+Variables.CreateNewList List=> List
+LOOP FOREACH CurrentItem IN Files
+    Excel.LaunchExcel.LaunchAndOpenUnderExistingProcess Path: CurrentItem Visible: True ReadOnly: False Instance=> ExcelInstance2
+    LOOP Column FROM 58 TO 72 STEP 1
+        LOOP Row FROM Value1 TO Value2 STEP 1
+            Excel.ReadFromExcel.ReadCell Instance: ExcelInstance2 StartColumn: Column StartRow: Row ReadAsText: False CellValue=> ExcelData
+            Excel.ReadFromExcel.ReadCell Instance: MasterFile StartColumn: Column StartRow: Row ReadAsText: False CellValue=> MasterData
+            IF IsNotEmpty(ExcelData) THEN
+                IF IsNotEmpty(MasterData) THEN
+                    Variables.AddItemToList Item: ExcelData + MasterData List: List
+                END
+            END
+        END
+        Excel.WriteToExcel.WriteCell Instance: MasterFile Value: List Column: Column Row: Value1
+        Variables.ClearList List: List
+    END
+END
